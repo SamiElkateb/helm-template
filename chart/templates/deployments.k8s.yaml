@@ -1,34 +1,43 @@
-{{- range $key, $val := .Values.deployments }}
+{{- range $deploymentKey, $deploymentValue := .Values.deployments }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ index $.Values.names $key }}
+  name: {{ index $.Values.names $deploymentKey, }}
   namespace: {{ $.Values.namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ index $.Values.names $key }}
+      app: {{ index $.Values.names $deploymentKey}
   template:
     metadata:
       labels:
-        app: {{ index $.Values.names $key }}
+        app: {{ index $.Values.names $deploymentKey }}
     spec:
+      {{- if index $deploymentValue containers }}
       containers:
-        - name: {{ index $.Values.names $key }}
-          image: {{ index $.Values.images $key }}
+      {{- range $containerKey, $containerValue :=  index $deploymentValue containers }}
+        - name: {{ index $.Values.names $containerKey }}
+          image: {{ index $.Values.images $containerKey }}
 
-          {{- if index $.Values.configmaps $key }}
+          {{- if index $deploymentValue args }}
+          args:
+            {{- range $argKey, $argValue :=  index $deploymentValue args }}
+            - $argValue
+            {{- end }}
+          {{- end }}
+
+          {{- if index $.Values.configmaps $containerKey }}
           envFrom:
-            {{- range $configmapKey, $configmapValue :=  index $.Values.configmaps $key }}
+            {{- range $configmapKey, $configmapValue :=  index $.Values.configmaps $containerKey }}
             - configMapRef:
                 name: {{ $configmapValue.name }}
             {{- end }}
           {{- end }}
 
-          {{- if index $.Values.secrets $key }}
+          {{- if index $.Values.secrets $containerKey }}
           env:
-            {{- range $secretKey, $secretValue :=  index $.Values.secrets $key }}
+            {{- range $secretKey, $secretValue :=  index $.Values.secrets $containerKey }}
             - name: {{ $secretValue.varName }}
               valueFrom:
                 secretKeyRef:
@@ -37,14 +46,19 @@ spec:
             {{- end }}
           {{- end }}
 
-      {{- if index $.Values.persistentVolumes $key }}
+          {{- if index $.Values.persistentVolumes $containerKey }}
           volumeMounts:
-            {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $key }}
+            {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $containerKey }}
             - mountPath: {{ $volumeValue.mountPath }}
               name: {{ $volumeValue.name }}
             {{- end }}
+          {{- end }}
+      {{- end }}
+      {{- end }}
+
+      {{- if index $.Values.persistentVolumes $deploymentKey }}
       volumes:
-        {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $key }}
+        {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $deploymentKey }}
         - name: {{ $volumeValue.name }}
           persistentVolumeClaim:
             claimName: {{ $volumeValue.claimName }}

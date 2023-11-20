@@ -20,7 +20,7 @@ spec:
           service:
             name: {{ .Values.names.app }}
             port:
-              number: {{ .Values.services.app.ports.main.port }}
+              number: {{ (index .Values.services .Values.ingressTarget).ports.main.port }}
   tls:
   - hosts:
       - {{ .Values.subdomain }}.{{ .Values.hostname }}
