@@ -7,7 +7,7 @@ metadata:
     traefik.ingress.kubernetes.io/redirect-entry-point: https
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/custom-response-headers: "Access-Control-Allow-Origin:*||Access-Control-Allow-Methods:GET,POST,OPTIONS||Access-Control-Allow-Headers:DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range||Access-Control-Expose-Headers:Content-Length,Content-Range"
-  name: {{ .Values.names.app }}-ingress
+  name: {{ index $.Values.names .Values.ingressTarget }}
   namespace: {{ .Values.namespace }}
 spec:
   rules:
@@ -18,7 +18,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.names.app }}
+            name: {{ index $.Values.names .Values.ingressTarget }}
             port:
               number: {{ (index .Values.services .Values.ingressTarget).ports.main.port }}
   tls:

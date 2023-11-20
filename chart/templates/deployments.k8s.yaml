@@ -3,31 +3,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ index $.Values.names $deploymentKey, }}
+  name: {{ index $.Values.names $deploymentKey }}
   namespace: {{ $.Values.namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ index $.Values.names $deploymentKey}
+      app: {{ index $.Values.names $deploymentKey }}
   template:
     metadata:
       labels:
         app: {{ index $.Values.names $deploymentKey }}
     spec:
-      {{- if index $deploymentValue containers }}
+      {{- if hasKey $deploymentValue "containers" }}
       containers:
-      {{- range $containerKey, $containerValue :=  index $deploymentValue containers }}
+      {{- range $containerKey, $containerValue :=  $deploymentValue.containers }}
         - name: {{ index $.Values.names $containerKey }}
           image: {{ index $.Values.images $containerKey }}
 
-          {{- if index $deploymentValue args }}
+
+          {{- if kindIs "map" $containerValue }}
+          {{- if hasKey $containerValue "args" }}
           args:
-            {{- range $argKey, $argValue :=  index $deploymentValue args }}
-            - $argValue
+            {{- range $argKey, $argValue :=  $containerValue.args }}
+            - {{ $argValue }}
             {{- end }}
           {{- end }}
+          {{- end }}
 
-          {{- if index $.Values.configmaps $containerKey }}
+          {{- if index (default dict $.Values.configmaps) $containerKey }}
           envFrom:
             {{- range $configmapKey, $configmapValue :=  index $.Values.configmaps $containerKey }}
             - configMapRef:
@@ -35,7 +38,7 @@ spec:
             {{- end }}
           {{- end }}
 
-          {{- if index $.Values.secrets $containerKey }}
+          {{- if index (default dict $.Values.secrets) $containerKey }}
           env:
             {{- range $secretKey, $secretValue :=  index $.Values.secrets $containerKey }}
             - name: {{ $secretValue.varName }}
@@ -46,22 +49,48 @@ spec:
             {{- end }}
           {{- end }}
 
-          {{- if index $.Values.persistentVolumes $containerKey }}
+          {{- $persistentVolumeExists := index (default dict $.Values.persistentVolumes) $containerKey }}
+          {{- $mountedConfigMaps := default dict (index (default dict $.Values.mountedConfigmaps) $deploymentKey) }}
+          {{- $configMapExists := index $mountedConfigMaps $containerKey }}
+          {{- if or $persistentVolumeExists $configMapExists }}
           volumeMounts:
+            {{- if $persistentVolumeExists }}
             {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $containerKey }}
             - mountPath: {{ $volumeValue.mountPath }}
               name: {{ $volumeValue.name }}
+            {{- end }}
+            {{- end }}
+
+            {{- if index $mountedConfigMaps $containerKey }}
+            {{- range $confiMapKey, $configmapValue :=  index $mountedConfigMaps $containerKey }}
+            - mountPath: {{ $configmapValue.mountPath }}
+              name: {{ $configmapValue.name }}
+            {{- end }}
             {{- end }}
           {{- end }}
       {{- end }}
       {{- end }}
 
-      {{- if index $.Values.persistentVolumes $deploymentKey }}
+      {{- $persistentVolumeExists := index (default dict $.Values.persistentVolumes) $deploymentKey }}
+      {{- $configMapExists := index (default dict $.Values.mountedConfigmaps) $deploymentKey }}
+      {{- if or $persistentVolumeExists $configMapExists }}
       volumes:
+        {{- if or $persistentVolumeExists }}
         {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $deploymentKey }}
         - name: {{ $volumeValue.name }}
           persistentVolumeClaim:
             claimName: {{ $volumeValue.claimName }}
+        {{- end }}
+        {{- end }}
+
+        {{- if $configMapExists }}
+        {{- range $deploymentConfigmapsKey, $deploymentConfigmapsValue :=  index $.Values.mountedConfigmaps $deploymentKey }}
+        {{- range $configmapKey, $configmapValue :=  $deploymentConfigmapsValue }}
+        - name: {{ $configmapValue.name }}
+          configMap:
+            name: {{ $configmapValue.name }}
+        {{- end }}
+        {{- end }}
         {{- end }}
       {{- end }}
 {{- end }}

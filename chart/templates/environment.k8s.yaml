@@ -1,3 +1,4 @@
+{{- if hasKey .Values "configmaps" }}
 {{- range $deploymentKey, $deploymentConfigVal := .Values.configmaps }}
 {{- range $configKey, $configVal := $deploymentConfigVal }}
 {{- if hasKey $configVal "data" }}
@@ -11,6 +12,7 @@ data:
   {{- range $environmentVariableKey, $environmentVariableValue := $configVal.data }}
   {{ $environmentVariableKey }}: "{{ $environmentVariableValue }}"
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

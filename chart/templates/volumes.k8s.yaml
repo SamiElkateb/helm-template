@@ -1,3 +1,4 @@
+{{- if hasKey .Values "persistentVolumes" }}
 {{ range $deploymentKey, $deploymentVolumesValue := .Values.persistentVolumes }}
 {{ range $volumeKey, $volumeValue := $deploymentVolumesValue  }}
 ---
@@ -31,5 +32,6 @@ spec:
   resources:
     requests:
       storage: {{ $volumeValue.storage }}
+{{ end }}
 {{ end }}
 {{ end }}
