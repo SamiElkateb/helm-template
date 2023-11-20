@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  base-template:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-20T20:16:25.845745+01:00"
+    description: A Helm chart for Kubernetes
+    digest: d6ebac61b9f8ed0bd2042295d7af4ce78495612f8fb37c730a788a771ebebaa9
+    name: base-template
+    type: application
+    urls:
+    - .deploy/base-template-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-11-20T20:16:25.844835+01:00"

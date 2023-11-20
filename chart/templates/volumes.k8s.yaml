@@ -1,0 +1,35 @@
+{{ range $deploymentKey, $deploymentVolumesValue := .Values.persistentVolumes }}
+{{ range $volumeKey, $volumeValue := $deploymentVolumesValue  }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ $volumeValue.name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  capacity:
+    storage: {{ $volumeValue.storage }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ $volumeValue.storageClassName }}
+  hostPath:
+    path: {{ $volumeValue.hostPath }}
+    type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $volumeValue.claimName }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  volumeName: {{ $volumeValue.name }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ $volumeValue.storageClassName }}
+  resources:
+    requests:
+      storage: {{ $volumeValue.storage }}
+{{ end }}
+{{ end }}

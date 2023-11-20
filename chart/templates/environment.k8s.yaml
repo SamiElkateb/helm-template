@@ -1,0 +1,16 @@
+{{- range $deploymentKey, $deploymentConfigVal := .Values.configmaps }}
+{{- range $configKey, $configVal := $deploymentConfigVal }}
+{{- if hasKey $configVal "data" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $configVal.name }}
+  namespace: {{ $.Values.namespace }}
+data:
+  {{- range $environmentVariableKey, $environmentVariableValue := $configVal.data }}
+  {{ $environmentVariableKey }}: "{{ $environmentVariableValue }}"
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

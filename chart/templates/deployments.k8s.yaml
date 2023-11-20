@@ -1,0 +1,53 @@
+{{- range $key, $val := .Values.deployments }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ index $.Values.names $key }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ index $.Values.names $key }}
+  template:
+    metadata:
+      labels:
+        app: {{ index $.Values.names $key }}
+    spec:
+      containers:
+        - name: {{ index $.Values.names $key }}
+          image: {{ index $.Values.images $key }}
+
+          {{- if index $.Values.configmaps $key }}
+          envFrom:
+            {{- range $configmapKey, $configmapValue :=  index $.Values.configmaps $key }}
+            - configMapRef:
+                name: {{ $configmapValue.name }}
+            {{- end }}
+          {{- end }}
+
+          {{- if index $.Values.secrets $key }}
+          env:
+            {{- range $secretKey, $secretValue :=  index $.Values.secrets $key }}
+            - name: {{ $secretValue.varName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretValue.valueFrom.name }}
+                  key: {{ $secretValue.valueFrom.key }}
+            {{- end }}
+          {{- end }}
+
+      {{- if index $.Values.persistentVolumes $key }}
+          volumeMounts:
+            {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $key }}
+            - mountPath: {{ $volumeValue.mountPath }}
+              name: {{ $volumeValue.name }}
+            {{- end }}
+      volumes:
+        {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $key }}
+        - name: {{ $volumeValue.name }}
+          persistentVolumeClaim:
+            claimName: {{ $volumeValue.claimName }}
+        {{- end }}
+      {{- end }}
+{{- end }}
