@@ -14,6 +14,18 @@ spec:
       labels:
         app: {{ index $.Values.names $deploymentKey }}
     spec:
+      {{- if hasKey $deploymentValue "dnsPolicy" }}
+      dnsPolicy: {{ $deploymentValue.dnsPolicy }}
+      {{- end }}
+
+      {{- if hasKey $deploymentValue "dnsConfig" }}
+      dnsConfig:
+        nameservers:
+        {{- range $argKey, $argValue :=  $deploymentValue.dnsConfig.nameservers }}
+        - {{ $argValue }}
+        {{- end }}
+      {{- end }}
+
       {{- if hasKey $deploymentValue "containers" }}
       containers:
       {{- range $containerKey, $containerValue :=  $deploymentValue.containers }}
@@ -52,7 +64,8 @@ spec:
           {{- $persistentVolumeExists := index (default dict $.Values.persistentVolumes) $containerKey }}
           {{- $mountedConfigMaps := default dict (index (default dict $.Values.mountedConfigmaps) $deploymentKey) }}
           {{- $configMapExists := index $mountedConfigMaps $containerKey }}
-          {{- if or $persistentVolumeExists $configMapExists }}
+          {{- $hostPathExists := index (default dict $.Values.hostPath) $containerKey }}
+          {{- if or $persistentVolumeExists $configMapExists $hostPathExists}}
           volumeMounts:
             {{- if $persistentVolumeExists }}
             {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $containerKey }}
@@ -67,19 +80,39 @@ spec:
               name: {{ $configmapValue.name }}
             {{- end }}
             {{- end }}
+
+            {{- if $hostPathExists }}
+            {{- range $hostPathKey, $hostPathValue :=  index $.Values.hostPath $containerKey }}
+            - mountPath: {{ $hostPathValue.mountPath }}
+              name: {{ $hostPathValue.name }}
+            {{- end }}
+            {{- end }}
+
           {{- end }}
       {{- end }}
       {{- end }}
 
       {{- $persistentVolumeExists := index (default dict $.Values.persistentVolumes) $deploymentKey }}
       {{- $configMapExists := index (default dict $.Values.mountedConfigmaps) $deploymentKey }}
-      {{- if or $persistentVolumeExists $configMapExists }}
+      {{- $hostPathExists := index (default dict $.Values.hostPath) $deploymentKey }}
+      {{- if or $persistentVolumeExists $configMapExists $hostPathExists}}
       volumes:
         {{- if or $persistentVolumeExists }}
         {{- range $volumeKey, $volumeValue :=  index $.Values.persistentVolumes $deploymentKey }}
         - name: {{ $volumeValue.name }}
           persistentVolumeClaim:
             claimName: {{ $volumeValue.claimName }}
+        {{- end }}
+        {{- end }}
+
+
+        {{- if or $hostPathExists }}
+        {{- range $volumeKey, $volumeValue :=  index $.Values.hostPath $deploymentKey }}
+        - name: {{ $volumeValue.name }}
+          hostPath:
+            path: {{ $volumeValue.path }}
+            type: {{ default "Directory" $volumeValue.type }}
+            readOnly: {{ default true $volumeValue.readOnly }}
         {{- end }}
         {{- end }}
 
