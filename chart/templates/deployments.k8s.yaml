@@ -32,6 +32,15 @@ spec:
         - name: {{ index $.Values.names $containerKey }}
           image: {{ index $.Values.images $containerKey }}
 
+          {{- if kindIs "map" $containerValue }}
+          {{- if hasKey $containerValue "command" }}
+          command:
+            {{- range $commandKey, $commandValue :=  $containerValue.command }}
+            - {{ $commandValue }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+
 
           {{- if kindIs "map" $containerValue }}
           {{- if hasKey $containerValue "args" }}
@@ -85,6 +94,7 @@ spec:
             {{- range $hostPathKey, $hostPathValue :=  index $.Values.hostPath $containerKey }}
             - mountPath: {{ $hostPathValue.mountPath }}
               name: {{ $hostPathValue.name }}
+              readOnly: {{ default true $hostPathValue.readOnly }}
             {{- end }}
             {{- end }}
 
@@ -112,7 +122,6 @@ spec:
           hostPath:
             path: {{ $volumeValue.path }}
             type: {{ default "Directory" $volumeValue.type }}
-            readOnly: {{ default true $volumeValue.readOnly }}
         {{- end }}
         {{- end }}
 

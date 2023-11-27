@@ -3,7 +3,27 @@ entries:
   base-template:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-11-27T21:28:55.139827+01:00"
+    created: "2023-11-27T22:59:46.629512+01:00"
+    description: A General Helm template
+    digest: fda6f78968981965b75254dff044ecd67d33698a9dc2a44c409bad20ff4faf99
+    name: base-template
+    type: application
+    urls:
+    - .deploy/base-template-0.3.5.tgz
+    version: 0.3.5
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-27T22:59:46.629343+01:00"
+    description: A General Helm template
+    digest: 5909c4e37818cab06b16972991ae668afb98868bebb0e3bb1a2e5f120dc7cf66
+    name: base-template
+    type: application
+    urls:
+    - .deploy/base-template-0.3.4.tgz
+    version: 0.3.4
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-27T22:59:46.629018+01:00"
     description: A General Helm template
     digest: 14a0ce7eab3c219662d224d06e69b57f5eeccebd4c46cfac9cf7e55b7e0a3268
     name: base-template
@@ -13,7 +33,7 @@ entries:
     version: 0.3.3
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-11-27T21:28:55.139725+01:00"
+    created: "2023-11-27T22:59:46.628575+01:00"
     description: A General Helm template
     digest: 026e43ab9875fdafb73de926820ec2e1adce1f1d2865faef0cf504800061b61d
     name: base-template
@@ -23,7 +43,7 @@ entries:
     version: 0.3.2
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-11-27T21:28:55.139624+01:00"
+    created: "2023-11-27T22:59:46.628184+01:00"
     description: A General Helm template
     digest: 9fdae1ded793a28e417fa101c1e1529153bd6017fe4ebf9418b3b8d4f9d454d7
     name: base-template
@@ -33,7 +53,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-11-27T21:28:55.139375+01:00"
+    created: "2023-11-27T22:59:46.627775+01:00"
     description: A General Helm template
     digest: 5fda7dfea8c197cda532abd9922243def99a2122a72fdc57f5e04f5f5f7de068
     name: base-template
@@ -43,7 +63,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-11-27T21:28:55.139261+01:00"
+    created: "2023-11-27T22:59:46.627354+01:00"
     description: A General Helm template
     digest: e5988b3c34b55046eaa805c49e9bc3a4f919934ab0d04fef0cc669b0b362a91f
     name: base-template
@@ -51,4 +71,4 @@ entries:
     urls:
     - .deploy/base-template-0.2.22.tgz
     version: 0.2.22
-generated: "2023-11-27T21:28:55.138392+01:00"
+generated: "2023-11-27T22:59:46.626435+01:00"
