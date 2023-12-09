@@ -1,0 +1,54 @@
+{{- if hasKey .Values "externalIngress" }}
+{{- range $extIngressKey, $extIngressValue := .Values.externalIngress }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $extIngressKey }}-service
+  namespace: {{ $.Values.namespace }}
+spec:
+  ports:
+  - name: {{ $extIngressKey }}
+    port: {{ $extIngressValue.port }}
+    targetPort: {{ $extIngressValue.port }}
+    protocol: TCP
+  clusterIP: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ $extIngressKey }}-service
+  namespace: {{ $.Values.namespace }}
+subsets:
+- addresses:
+  - ip: "{{ $extIngressValue.destinationIp }}"
+  ports:
+  - name: {{ $extIngressKey }}
+    port: {{ $extIngressValue.port }}
+    protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  name: {{ $extIngressKey }}-ingress
+  namespace: {{ $.Values.namespace }}
+spec:
+  rules:
+  - host: {{ $extIngressValue.subdomain }}.{{ $.Values.hostname }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $extIngressKey }}-service
+            port:
+              number: {{ $extIngressValue.port }}
+  tls:
+  - hosts:
+      - {{ $extIngressValue.subdomain }}.{{ $.Values.hostname }}
+    secretName: {{ $.Values.secrets.ssl.name }}
+{{- end }}
+{{- end }}
