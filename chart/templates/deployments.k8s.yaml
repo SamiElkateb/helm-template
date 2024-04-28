@@ -18,11 +18,22 @@ spec:
       dnsPolicy: {{ $deploymentValue.dnsPolicy }}
       {{- end }}
 
+      {{- if hasKey $deploymentValue "securityContext" }}
+      securityContext:
+        {{- toYaml $deploymentValue.securityContext | nindent 8 }}
+      {{- end }}
+
       {{- if hasKey $deploymentValue "dnsConfig" }}
       dnsConfig:
+        {{- if hasKey $deploymentValue.dnsConfig "nameservers" }}
         nameservers:
         {{- range $argKey, $argValue :=  $deploymentValue.dnsConfig.nameservers }}
         - {{ $argValue }}
+        {{- end }}
+        {{- end }}
+        {{- if hasKey $deploymentValue.dnsConfig "options" }}
+        options:
+        {{- toYaml $deploymentValue.dnsConfig.options | nindent 8 }}
         {{- end }}
       {{- end }}
 
@@ -38,6 +49,13 @@ spec:
             {{- range $commandKey, $commandValue :=  $containerValue.command }}
             - {{ $commandValue }}
             {{- end }}
+          {{- end }}
+          {{- end }}
+
+          {{- if kindIs "map" $containerValue }}
+          {{- if hasKey $containerValue "securityContext" }}
+          securityContext:
+            {{- toYaml $containerValue.securityContext | nindent 8 }}
           {{- end }}
           {{- end }}
 
@@ -87,6 +105,9 @@ spec:
             {{- range $confiMapKey, $configmapValue :=  index $mountedConfigMaps $containerKey }}
             - mountPath: {{ $configmapValue.mountPath }}
               name: {{ $configmapValue.name }}
+              {{- if index $configmapValue "subPath" }}
+              subPath: {{ $configmapValue.subPath }}
+              {{- end }}
             {{- end }}
             {{- end }}
 
