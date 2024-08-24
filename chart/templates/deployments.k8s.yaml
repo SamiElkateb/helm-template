@@ -23,6 +23,13 @@ spec:
         {{- toYaml $deploymentValue.securityContext | nindent 8 }}
       {{- end }}
 
+      {{- if hasKey $.Values "privateRegistry" }}
+      {{- if $.Values.privateRegistry }}
+      imagePullSecrets:
+        - name: regcred
+      {{- end }}
+      {{- end }}
+
       {{- if hasKey $deploymentValue "dnsConfig" }}
       dnsConfig:
         {{- if hasKey $deploymentValue.dnsConfig "nameservers" }}
