@@ -1,16 +1,17 @@
 {{- if hasKey .Values "services" }}
-{{- range $key, $val := .Values.services }}
+{{- range $podKey, $podData := .Values.services }}
+{{- range $serviceKey, $serviceData := $podData }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ index $.Values.names $key }}
+  name: {{ index $.Values.names $podKey }}-{{ $serviceKey }}
   namespace: {{ $.Values.namespace }}
 spec:
   selector:
-    app: {{ index $.Values.names $key }}
+    app: {{ index $.Values.names $podKey }}
   ports:
-    {{ range $portsKey, $portsValue := $val.ports }}
+    {{ range $portsKey, $portsValue := $serviceData.ports }}
     - protocol: {{ $portsValue.protocol }}
       port: {{ $portsValue.port }}
       targetPort: {{ $portsValue.targetPort }}
@@ -21,6 +22,7 @@ spec:
       nodePort: {{ $portsValue.nodePort }}
       {{- end }}
     {{- end }}
-  type: {{ $val.type }}
+  type: {{ $serviceData.type }}
+{{- end }}
 {{- end }}
 {{- end }}

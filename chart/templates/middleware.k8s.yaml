@@ -1,0 +1,13 @@
+{{- range $key, $val := .Values.middlewares }}
+{{- if hasKey $val "basicAuth" }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ index $.Values.names $key }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  basicAuth:
+      secret: {{ $val.basicAuth.secret }}
+{{- end }}
+{{- end }}

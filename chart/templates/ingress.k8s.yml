@@ -8,6 +8,9 @@ metadata:
     traefik.ingress.kubernetes.io/redirect-entry-point: https
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/custom-response-headers: "Access-Control-Allow-Origin:*||Access-Control-Allow-Methods:GET,POST,OPTIONS||Access-Control-Allow-Headers:DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range||Access-Control-Expose-Headers:Content-Length,Content-Range"
+    {{- if .Values.ingress.httpsRedirect }}
+        traefik.ingress.kubernetes.io/router.middlewares: "{{ .Values.namespace }}-redirect-to-https@kubernetescrd"
+    {{- end }}
   name: {{ .Values.ingress.name }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -16,13 +19,15 @@ spec:
   - host: {{ $ingressValue.subdomain }}.{{ $.Values.hostname }}
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ index $.Values.names $ingressValue.serviceName }}
-            port:
-              number: {{ (index $.Values.services $ingressValue.serviceName).ports.main.port }}
+      {{- range $pathKey, $pathValue := $ingressValue.paths }}
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ index $.Values.names $pathValue.podName }}-{{ $pathValue.serviceName }}
+              port:
+                number: {{ (index (index $.Values.services $pathValue.podName) $pathValue.serviceName).ports.main.port }}
+      {{- end }}
   {{- end }}
   tls:
   {{- range $ingressKey, $ingressValue := .Values.ingress.rules }}
